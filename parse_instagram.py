@@ -19,30 +19,63 @@ def fix_text(text):
 
 def parse_post(item):
     post = {"url": None ,
-            "caption": None }
+            "caption": None , 
+            "hashtags": [], 
+            "author" : None, 
+            "saved_at": None }
     
     for i in item["label_values"]:
         if "label" in i:
+            
             if i["label"] == "URL":
                 post["url"] = i["value"]
             elif  i["label"] == "Subtitrare":
                 post["caption"] = fix_text(i["value"])
+        
+        elif i["title"] == "Hashtaguri":
+            for h in i["dict"]:
+                post["hashtags"].append(h["dict"][0]["value"])
+        
+        elif i["title"] == "Proprietar":
+            if i["dict"] != [] :
+               for a in i["dict"]:
+                   for tag in a["dict"]:
+                        if tag["label"] == "Nume de utilizator":
+                            post["author"] =tag["value"]
+
+    post["saved_at"] = datetime.fromtimestamp(item["timestamp"])
 
     return post
         
 
 def main():
 
+
     try:
-        with open("saved_posts.json", "r", encoding='utf-8' ) as file:
+        with open("data/saved_posts.json", "r", encoding='utf-8' ) as file:
             data = json.load(file)
 
 
     except FileNotFoundError:
         print ("error: file not found ")
 
-    for item in data[:3]:
-        print(parse_post(item))
+    emptyCaption = 0
+    noAuthor =  0
+    noHashtag= 0 
+
+    for item in data:
+    
+       # print(parse_post(item))
+        d = parse_post(item)
+        if d["caption"] == None :
+                    emptyCaption +=1
+        if d["author"] == None:
+                    noAuthor +=1
+        if d["hashtags"] == []:
+                    noHashtag +=1
+    
+    print (" emptyCaption=" ,  emptyCaption, "| noAuthor = ", noAuthor, " | noHashtag=", noHashtag)
 
 if __name__ == "__main__":
+    
     main()
