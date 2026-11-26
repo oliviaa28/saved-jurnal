@@ -15,7 +15,7 @@ engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(bind= engine)
 
-class base(DeclarativeBase):
+class Base(DeclarativeBase):
     pass
 
 def get_db():
